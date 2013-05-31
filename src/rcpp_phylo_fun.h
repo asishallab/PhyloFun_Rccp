@@ -23,6 +23,6 @@ RcppExport SEXP conditionalProbabilityTable( SEXP branchLength, SEXP annos,
 
 RcppExport SEXP conditionalProbabilityTables( SEXP uniqueEdgeLengths, SEXP annos, SEXP
     stringifiedAnnotations, SEXP annotsMutationProbTableList, SEXP
-    mutTblLengthColIndx, SEXP pMutColIndx, SEXP unknownAnnot, SEXP nThreads );
+    mutTblLengthColIndx, SEXP nThreads );
 
 #endif
