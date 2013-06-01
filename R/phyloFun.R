@@ -15,8 +15,14 @@ condProbTbl <- function( branchLength, annos, stringifiedAnnotations,
 condProbsTbls <- function( uniqueEdgeLengths, annos, stringifiedAnnotations,
                           annotsMutationProbTableList, mutTblLengthColIndx,
                           nThreads ) {
+  # Pass only the required mutation probability tables as matrices:
+  uniq.annos <- intersect(
+    unique( unlist( annos ) ), 
+    names( annotsMutationProbTableList )
+  )
+  annotsMutProbTbls <- lapply( annotsMutationProbTableList[ uniq.annos ], as.matrix )
   ret <- .Call( "conditionalProbabilityTables", uniqueEdgeLengths, annos,
-               stringifiedAnnotations, annotsMutationProbTableList,
+               stringifiedAnnotations, annotsMutProbTbls,
                mutTblLengthColIndx, nThreads, PACKAGE="PhyloFun" )
   return( ret )
 }
