@@ -1,0 +1,22 @@
+h1. PhyloFun_Rccp
+
+h2. Install
+
+* git clone git://github.com/asishallab/PhyloFun_Rccp.git ./PhyloFun
+* R CMD INSTALL PhyloFun
+
+h2. Test
+
+* @cd PhyloFun@
+* Open an interactive R shell with @R@ and in it type
+* @source("testCptsRealLive.R")@
+
+This currently is the "best" running experiment. It only leaves the @Rcpp::List@ empty:
+
+* in above R shell after running the test type @ls@ and check contents of R list @cpts.p@
+
+h2. The Rcpp Code
+
+The OpenMP using C++ code can be found in file @src/rcpp_phylo_fun.cpp@ function @conditionalProbabilityTables(…)@
+
+_Thank you for your interest and help!_
