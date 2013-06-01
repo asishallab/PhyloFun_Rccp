@@ -74,30 +74,21 @@ SEXP conditionalProbabilityTables( SEXP uniqueEdgeLengths, SEXP annos, SEXP
     mutTblLengthColIndx, SEXP nThreads ) {
   BEGIN_RCPP
 
-    //std::cout << "1" << "\n";
     NumericVector numberThreads = NumericVector( nThreads );
-    //std::cout << "2" << "\n";
     omp_set_num_threads( numberThreads(0) );
-    //std::cout << "3" << "\n";
 
     NumericVector edgeLengths = NumericVector( uniqueEdgeLengths );
-    //std::cout << "4" << "\n";
     CharacterVector edgeLengthsAsStrs = as<CharacterVector>( edgeLengths );
-    //std::cout << "5" << "\n";
     List cpts = List( 0 );
-    /* std::map< std::string, std::vector<double> > cpts; */
-    //std::cout << "6" << "\n";
 
-    #pragma omp parallel for private( uniqueEdgeLengths, annos, stringifiedAnnotations, annotsMutationProbTableList, mutTblLengthColIndx, nThreads, edgeLengths ) shared( cpts )
-    for ( int i = 0; i < edgeLengths.size(); i++ )
-    {
+    for ( int i = 0; i < edgeLengths.size(); i++ ) {
       NumericVector currBranchLength( 1, edgeLengths( i ) );
       NumericMatrix cpt = conditionalProbabilityTable( currBranchLength, annos,
           stringifiedAnnotations, annotsMutationProbTableList,
           mutTblLengthColIndx );
       cpts.push_back( cpt, std::string( edgeLengthsAsStrs( i ) ) );
-      /* cpts[ std::string( edgeLengthsAsStrs( i ) ) ] = as<std::vector<double> >( cpt ); */
     }
+
     return( wrap( cpts ) );
 
   END_RCPP
