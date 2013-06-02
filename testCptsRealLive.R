@@ -1,6 +1,6 @@
 require( PhyloFun )
 load( "~/workspace/PhyloFun/data/p_mutation_tables_R_image.bin" )
-load( "./cptsTest.RData" )
+load( "./data/cptsTest.RData" )
 st.p <- system.time( cpts.p <- condProbsTbls( test.data$uniq.branch.lengths,
                                              test.data$anno.space$biological_process,
                                              test.data$annos.as.strs$biological_process,
