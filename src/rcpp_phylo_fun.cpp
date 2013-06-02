@@ -1,27 +1,22 @@
 #include "rcpp_phylo_fun.h"
 using namespace Rcpp ;
 
-NumericVector findMatchingRow( NumericMatrix table, SEXP val, SEXP colInd ){
-  BEGIN_RCPP
+double findMatchingRow( NumericMatrix table, double value, int columnIndex ){
 
-    NumericVector value = NumericVector( val );
-    NumericVector columnIndex = NumericVector( colInd );
-    NumericVector clmn = table( _ , columnIndex( 0 ) );
+    NumericVector clmn = table( _ , columnIndex );
     int indx = clmn.size() - 1;
-    for( int i=0; i<clmn.size(); i++ ) {
-      if( clmn( i ) >= value( 0 ) ) {
+    for( int i=0; i < clmn.size(); i++ ) {
+      if( clmn( i ) >= value ) {
         indx = i;
         break;
       }
     }
-    return( table( indx, _ ) );
+    return( table( indx, _ )( 0 ) );
 
-  END_RCPP
 }
 
-NumericVector mutationProbability( SEXP compositeAnnotation, SEXP branchLength, SEXP
-    annotsMutProbTables, SEXP distanceColumnIndx ) {
-  BEGIN_RCPP
+double mutationProbability( SEXP compositeAnnotation, double branchLength, SEXP
+    annotsMutProbTables, int distanceColumnIndx ) {
 
     CharacterVector compAnnos( compositeAnnotation );
     List anMutProbTbls = List( annotsMutProbTables );
@@ -29,74 +24,69 @@ NumericVector mutationProbability( SEXP compositeAnnotation, SEXP branchLength, 
     for ( int i = 0; i < compAnnos.size(); i++ ) {
       std::string singlAnno( compAnnos( i ) );
       NumericMatrix pMutTbl = anMutProbTbls( singlAnno );
-      NumericVector pMutRow = findMatchingRow( pMutTbl, branchLength, distanceColumnIndx );
-      if ( pMutRow( 0 ) > mutProb ) {
-        mutProb = pMutRow( 0 );
+      double pMut = findMatchingRow( pMutTbl, branchLength, distanceColumnIndx );
+      if ( pMut > mutProb ) {
+        mutProb = pMut;
       }
     }
-    return( NumericVector( 1, mutProb ) );
+    return( mutProb );
 
-  END_RCPP
 }
 
-SEXP conditionalProbabilityTable( SEXP branchLength, SEXP annos,
-    SEXP stringifiedAnnotations, SEXP annotsMutationProbTables, SEXP
+std::vector< std::vector< double > > conditionalProbabilityTable( double
+    branchLength, List annosLst, List annotsMutationProbTables, int
     mutTblLengthColIndx ) {
-  BEGIN_RCPP
 
-    List annosLst( annos );
-    CharacterVector annosAsStrs( stringifiedAnnotations );
-    NumericMatrix cpt = NumericMatrix( annosLst.size(), annosLst.size() );
-    cpt.attr( "dimnames" ) = List::create( annosAsStrs, annosAsStrs );
-
-    for ( int i = 0; i < annosLst.size(); i++ ) {
-      CharacterVector compositeAnnotation = annosLst( i );
-      double compAnnoMutProb = 1.0;
-      std::string ua = "unknown";
-      std::string caFirst = as<std::string>( compositeAnnotation( 0 ) );
-      if ( ua != caFirst ) {
-        compAnnoMutProb = mutationProbability( compositeAnnotation,
-            branchLength, annotsMutationProbTables, mutTblLengthColIndx )( 0 );
-      }
-      double mutToOtherAnnosProb = compAnnoMutProb / ( annosLst.size() - 1 );
-      NumericVector colmn( annosLst.size(), mutToOtherAnnosProb );
-      colmn( i ) = 1.0 - compAnnoMutProb;
-      cpt( _, i ) = colmn;
+  std::vector< std::vector <double> > cpt( annosLst.size() );
+  for ( int i = 0; i < annosLst.size(); i++ ) {
+    CharacterVector compositeAnnotation = annosLst( i );
+    double compAnnoMutProb = 1.0;
+    std::string ua = "unknown";
+    std::string caFirst = as<std::string>( compositeAnnotation( 0 ) );
+    if ( ua != caFirst ) {
+      compAnnoMutProb = mutationProbability( compositeAnnotation,
+          branchLength, annotsMutationProbTables, mutTblLengthColIndx );
     }
+    double mutToOtherAnnosProb = compAnnoMutProb / ( annosLst.size() - 1 );
+    std::vector< double > colmn( annosLst.size(), mutToOtherAnnosProb );
+    colmn[ i ] = 1.0 - compAnnoMutProb;
+    cpt[ i ] = colmn;
+  }
 
-    return( wrap( cpt ) );
-
-  END_RCPP
+  return( cpt );
 }
 
-SEXP conditionalProbabilityTables( SEXP uniqueEdgeLengths, SEXP annos, SEXP
-    stringifiedAnnotations, SEXP annotsMutationProbTableList, SEXP
-    mutTblLengthColIndx, SEXP nThreads ) {
+SEXP conditionalProbabilityTables( SEXP sUniqueEdgeLengths, SEXP sAnnos, SEXP
+    sStringifiedAnnotations, SEXP sAnnotsMutationProbTableList, SEXP
+    sMutTblLengthColIndx, SEXP sNThreads ) {
   BEGIN_RCPP
 
-    //std::cout << "1" << "\n";
-    NumericVector numberThreads = NumericVector( nThreads );
+    NumericVector nThreads = NumericVector( sNThreads );
     //std::cout << "2" << "\n";
-    omp_set_num_threads( numberThreads(0) );
+    omp_set_num_threads( nThreads(0) );
     //std::cout << "3" << "\n";
 
-    NumericVector edgeLengths = NumericVector( uniqueEdgeLengths );
-    //std::cout << "4" << "\n";
+    NumericVector uniqueEdgeLengths = NumericVector( sUniqueEdgeLengths );
     CharacterVector edgeLengthsAsStrs = as<CharacterVector>( edgeLengths );
+
+    List annos( sAnnos );
+    List annotsMutationProbTables( sAnnotsMutationProbTableList );
+    NumericVector rMutTblLengthColIndx( sMutTblLengthColIndx );
+    int mutTblLengthColIndx = rMutTblLengthColIndx( 0 );
     //std::cout << "5" << "\n";
-    List cpts = List( 0 );
+    /* List cpts = List( 0 ); */
     /* std::map< std::string, std::vector<double> > cpts; */
     //std::cout << "6" << "\n";
 
-    #pragma omp parallel for private( uniqueEdgeLengths, annos, stringifiedAnnotations, annotsMutationProbTableList, mutTblLengthColIndx, nThreads, edgeLengths ) shared( cpts )
-    for ( int i = 0; i < edgeLengths.size(); i++ )
+    std::vector< std::vector< std::vector< double > > > cpts( uniqueEdgeLengths.size() );
+    #pragma omp parallel for
+    for ( int i = 0; i < uniqueEdgeLengths.size(); i++ )
     {
-      NumericVector currBranchLength( 1, edgeLengths( i ) );
-      NumericMatrix cpt = conditionalProbabilityTable( currBranchLength, annos,
-          stringifiedAnnotations, annotsMutationProbTableList,
-          mutTblLengthColIndx );
-      cpts.push_back( cpt, std::string( edgeLengthsAsStrs( i ) ) );
-      /* cpts[ std::string( edgeLengthsAsStrs( i ) ) ] = as<std::vector<double> >( cpt ); */
+      double currBranchLength = uniqueEdgeLengths( i );
+      std::vector< std::vector< double > > cpt = c_conditionalProbabilityTable(
+          currBranchLength, annos, 
+          annotsMutationProbTables, mutTblLengthColIndx );
+      cpts[ i ] = cpt;
     }
     return( wrap( cpts ) );
 

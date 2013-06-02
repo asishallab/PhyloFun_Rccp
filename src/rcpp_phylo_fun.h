@@ -12,12 +12,12 @@
 
 using namespace Rcpp ;
 
-RcppExport NumericVector findMatchingRow( NumericMatrix table, SEXP val, SEXP colInd ) ;
+double findMatchingRow( NumericMatrix table, double value, int columnIndex ) ;
 
-RcppExport NumericVector mutationProbability( SEXP compositeAnnotation, SEXP branchLength, SEXP
-    annotsMutProbTables, SEXP distanceColumnIndx ) ;
+double mutationProbability( SEXP compositeAnnotation, double branchLength, SEXP
+    annotsMutProbTables, int distanceColumnIndx ) ;
 
-RcppExport SEXP conditionalProbabilityTable( SEXP branchLength, SEXP annos,
+SEXP conditionalProbabilityTable( SEXP branchLength, SEXP annos,
     SEXP stringifiedAnnotations, SEXP annotsMutationProbTables, SEXP
     mutTblLengthColIndx );
 
