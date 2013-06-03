@@ -17,6 +17,6 @@ This currently is the "best" running experiment. It only leaves the @Rcpp::List@
 
 h2. The Rcpp Code
 
-The OpenMP using C++ code can be found in file @src/rcpp_phylo_fun.cpp@ function @conditionalProbabilityTables(…)@ starting at line 91.
+The OpenMP using C++ code can be found in file @src/rcpp_phylo_fun.cpp@ function @conditionalProbabilityTables(…)@ starting at line 98.
 
 _Thank you for your interest and help!_
