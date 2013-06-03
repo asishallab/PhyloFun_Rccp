@@ -25,4 +25,6 @@ RcppExport SEXP conditionalProbabilityTables( SEXP uniqueEdgeLengths, SEXP annos
     stringifiedAnnotations, SEXP annotsMutationProbTableList, SEXP
     mutTblLengthColIndx, SEXP nThreads );
 
+RcppExport SEXP r_convertListOfMatrices( SEXP sList );
+
 #endif

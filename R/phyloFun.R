@@ -1,3 +1,8 @@
+convListOfMatrcs <- function( lst ) {
+  ret <- .Call( "r_convertListOfMatrices", lst, PACKAGE="PhyloFun" )
+  return( ret )
+}
+
 mutProb <- function( comp.anno, brnch.ln, mutProbTbls ) {
   ret <- .Call( "mutationProbability", comp.anno, brnch.ln, mutProbTbls, 4,
                PACKAGE="PhyloFun" )
